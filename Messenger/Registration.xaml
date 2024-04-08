@@ -13,22 +13,32 @@
         <Label HorizontalAlignment="Center" 
                FontSize="40" FontFamily="Harlow Solid Italic" 
                FontWeight="Bold" Foreground="White" Margin="0,241,0,59" >Sign in</Label>
-        <TextBox x:Name="LoginTextBox" 
+        <TextBox x:Name="LoginTextBox"
                  Width="200"
-                 Height="30"
-                 Foreground="Black" VerticalAlignment="Center" Margin="0,0,0,20" Padding="4" FontSize="18" FontFamily="Arial" MaxLines="105" MaxLength="30" BorderBrush="#FF1F1F1F"/>
-        <TextBox x:Name="PasswordTextBox"
+                 Height="32"
+                 VerticalAlignment="Center" Margin="0,0,0,20" Padding="4" FontSize="18" FontFamily="Arial" MaxLines="105" MaxLength="30" BorderBrush="#FF1F1F1F" MouseEnter="LoginTextBox_MouseEnter" MouseLeave="LoginTextBox_MouseLeave" PreviewMouseLeftButtonDown="LoginTextBox_PreviewMouseLeftButtonDown"/>
+        <TextBox x:Name="PasswordTextBox" 
                  Width="200"
-                 Height="30"
-                 Foreground="Black" VerticalAlignment="Center" Margin="0,0,0,20" Padding="4" FontSize="18" FontFamily="Arial" MaxLength="30" BorderBrush="#FF1F1F1F"/>
+                 Height="32"
+                 VerticalAlignment="Center" Margin="0,0,0,20" Padding="4" FontSize="18" FontFamily="Arial" MaxLength="30" BorderBrush="#FF1F1F1F" MouseEnter="PasswordTextBox_MouseEnter" MouseLeave="PasswordTextBox_MouseLeave" PreviewMouseLeftButtonDown="PasswordTextBox_PreviewMouseLeftButtonDown"/>
         <DockPanel>
             <Button x:Name="SignIn"
                 Background="White"
                 Height="25"
-                Foreground="Black" Content="Sign in" Width="90" Margin="533,0,0,0" />
+                Foreground="Black" Content="Sign in" Width="90" HorizontalAlignment="Center" Margin="540,0,5,0" VerticalAlignment="Center">
+                <Button.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform ScaleY="1"/>
+                        <SkewTransform/>
+                        <RotateTransform/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </Button.RenderTransform>
+            </Button>
             <Button x:Name="SignUp"
+                Height="25" 
                 Background="White"
-                Foreground="Black" Content="Sign up" RenderTransformOrigin="0.5,0.5" DockPanel.Dock="Right" Width="90" HorizontalAlignment="Left" Margin="20,0,0,0">
+                Foreground="Black" Content="Sign up" Width="90" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="5,0,530,0">
                 <Button.RenderTransform>
                     <TransformGroup>
                         <ScaleTransform ScaleY="1"/>

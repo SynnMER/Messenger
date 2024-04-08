@@ -33,36 +33,47 @@
         <Grid>
             <TextBox x:Name="searchFriends"
                  Height="35" Width="250"
-                 Foreground="Black" Margin="0,0,990,500" Padding="5" FontSize="19" FontFamily="Arial" KeyDown="searchFriends_KeyDown" TextChanged="searchFriends_TextChanged">
+                 Foreground="Black" Margin="0,0,990,500" Padding="5" FontSize="19" FontFamily="Arial" KeyDown="searchFriends_KeyDown">
                 <TextBox.Resources>
                     <Style TargetType="{x:Type Border}">
                         <Setter Property="CornerRadius" Value="15"/>
                     </Style>
                 </TextBox.Resources>
             </TextBox>
-            <ScrollViewer Width="250" Height="480" Margin="0,100,990,0" VerticalScrollBarVisibility="Hidden" >
+            
+            <ScrollViewer Width="250" Height="480" Margin="0,100,990,0" VerticalScrollBarVisibility="Auto" >
                 <StackPanel>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                    <Button MinHeight="60" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
-                </StackPanel>
-            </ScrollViewer>
-            <TextBlock Height="30" Background="Transparent" Margin="350,0,0,500" Width="150" Padding="4" HorizontalAlignment="Left">
-                <Run x:Name="namePerson" FontSize="18" FontFamily="Lucida Sans" Foreground="white" FontWeight="Bold" ></Run>
-            </TextBlock>
-            <ScrollViewer Height="400" VerticalScrollBarVisibility="Hidden" Margin="350,120,20,150">
-                <StackPanel x:Name="stackChat">
-                    <ItemsControl MinHeight="30" Width="455" ItemsSource="{Binding myTextBlock}" Margin="0,10,0,0" HorizontalAlignment="Left">
-                        <TextBlock MinHeight="30" Background="Transparent" Margin="40,0,0,0" Width="415" HorizontalAlignment="Left" TextWrapping="Wrap" FontSize="18" FontFamily="Lucida Sans" Foreground="white" >
-                        </TextBlock>
+                    <ItemsControl x:Name="buttonsCont" ItemsSource="{Binding Buttons}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button MinHeight="60" Content="{Binding}" Background="Transparent" BorderBrush="Transparent" Foreground="Black" FontSize="30" FontWeight="Bold" FontFamily="Constantia" Style="{StaticResource friends}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
+            
+            <TextBlock Height="30" Background="Transparent" Margin="350,0,0,500" Width="150" Padding="4" HorizontalAlignment="Left" >
+                <Run x:Name="namePerson" FontSize="18" FontFamily="Lucida Sans" Foreground="white" FontWeight="Bold" ></Run>
+            </TextBlock>
+            
+            <!--MVVM-->
+            <ScrollViewer Height="400" VerticalScrollBarVisibility="Hidden" Margin="350,120,20,150" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel x:Name="stackChat">
+                    <ListBox x:Name="listItems" ItemsSource="{Binding MyTextBlock}" BorderThickness ="{Binding BorderThickness}" Background="{Binding Background}">
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="HorizontalAlignment" Value="Right"/>
+                                <Setter Property="Margin" Value="0,10,60,0"/>
+                                <Setter Property="MinWidth" Value="20"/>
+                                <Setter Property="MinHeight" Value="30"/>
+                                <Setter Property="MaxWidth" Value="415"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+                    </ListBox>
+                </StackPanel>
+            </ScrollViewer>
+
         </Grid>
     </Grid>
 

@@ -13,49 +13,37 @@ using System.Net.Sockets;
 using System.Net;
 using Microsoft.SqlServer.Server;
 using System.Windows.Media;
+using System.Windows.Markup;
 
 namespace Messenger
 {
     internal class verification
     {
-        private SqlConnection sqlConnection = null;
         private Registration registration = null;
         public bool check = false;
-        public static string ip = "";
-        public static string port = "";
+        public static string _ip = "";
+        public static string _port = "";
 
-        public void sqlConnect()
-        {
-            sqlConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["messengerDB"].ConnectionString);
-            sqlConnection.Open();
-        }
-        //посмотреть как закрывать поток 
-        public void remember(string login,string password)
-        {
-            Thread thread = new Thread(() =>
-            {
-                rememberThread(login, password);
-            });
-            thread.Start();
-        }
         public async void rememberThread(string login, string password)
         {
             bool flag = false;
 
             string host = Dns.GetHostName();
             IPAddress[] addresses = Dns.GetHostAddresses(host);
-
             IPAddress ipv4Address = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+
+            SqlConnection sqlConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["messengerDB"].ConnectionString);
+            sqlConnection.Open();
             await Task.Run(() =>
             {
-                SqlCommand command = new SqlCommand($"SELECT login, password FROM signUp", sqlConnection);
+                SqlCommand command = new SqlCommand($"SELECT login FROM signUp", sqlConnection);
                 SqlDataReader reader = command.ExecuteReader();
 
                 if (reader.HasRows) // если есть данные
                 {
                     while (reader.Read()) // построчно считываем данные
                     {
-                        if (reader.GetValue(0).ToString() == login && reader.GetValue(1).ToString() == password)
+                        if (reader.GetValue(0).ToString() == login)
                         {
                             flag = true;
                             break;
@@ -77,10 +65,18 @@ namespace Messenger
 
         public async void checkRemember(string login, string password)
         {
+            SqlConnection sqlConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["messengerDB"].ConnectionString);
+            sqlConnection.Open();
+
+            string host = Dns.GetHostName();
+            IPAddress[] addresses = Dns.GetHostAddresses(host);
+            IPAddress ipv4Address = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+
+            SqlCommand changeIP = new SqlCommand($"UPDATE [signUp] SET ip='{ipv4Address}' WHERE login='{login}'", sqlConnection);
+            changeIP.ExecuteNonQuery();
             await Task.Run(() =>
             {
                 SqlCommand command = new SqlCommand($"SELECT login, password, ip, port FROM signUp", sqlConnection);
-
                 SqlDataReader reader = command.ExecuteReader();
 
                 if (reader.HasRows) // если есть данные
@@ -90,8 +86,8 @@ namespace Messenger
                         if (reader.GetValue(0).ToString() == login && reader.GetValue(1).ToString() == password)
                         {
                             check = true;
-                            ip = reader.GetValue(2).ToString();
-                            port = reader.GetValue(3).ToString();
+                            _ip = reader.GetValue(2).ToString();
+                            _port = reader.GetValue(3).ToString();
                             break;
                         }
                     }
@@ -103,6 +99,7 @@ namespace Messenger
             if (check == true)
             {
                 chat chat = new chat();
+                chat._login = login;
                 chat.Show();
             }
             else
@@ -113,7 +110,6 @@ namespace Messenger
                 
             }
             sqlConnection.Close();
-                
         }
     }
 }

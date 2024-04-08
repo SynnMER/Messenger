@@ -15,17 +15,40 @@ using System.Configuration;
 using System.Windows.Controls;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Documents;
 
+
+//Задачи на 02.04
+//2. Сделать добавление друзей в кнопки при открытие чата с ними
+//Задачи на 03.04
+//1. Добавить дату, при изменение дня , сверху посередине
+//2. Подключить отправку сообщений другому человеку
+//3. Сделать правильное расположение сообщений
+//Задачи на 04.04 
+//1. Сделать сохранение сообщений в файл
+//2. Сделать сохранение наших друзей в файл
+//3. Подключить переписки с людьми(у каждого человека, своя переписка, и все это сохранять)
+//Задачи на 05.04
+//1. Подключить отправку фото через символ на форме, другому человеку
+//2. Доделать оставшиеся задачи
 namespace Messenger
 {
     internal class connection
     {
         private SqlConnection sqlConnection = null;
-        public static bool flag = false;
+        
+        public bool flag = false;
+        private verification verification = new verification();
+        private TcpClient tcpClient = new TcpClient();
         //логика отправки сообщений
-        public void sendMessage(string text)
+        public async void sendMessage(string text)
         {
+            var stream = tcpClient.GetStream();
 
+            byte[] data = Encoding.UTF8.GetBytes(text);
+            // отправляем данные
+            await stream.WriteAsync(data, 0, 1024);
         }
         public async void searchFriends(string login)
         {
@@ -35,53 +58,85 @@ namespace Messenger
             sqlConnection = new SqlConnection(ConfigurationManager.ConnectionStrings["messengerDB"].ConnectionString);
             sqlConnection.Open();
 
-            //=============== сделать подсказку
-            await Task.Run(() =>
-            {
-                SqlCommand command = new SqlCommand($"SELECT login, password, ip, port FROM signUp", sqlConnection);
-                SqlDataReader reader = command.ExecuteReader();
+            string host = Dns.GetHostName();
+            IPAddress[] addresses = Dns.GetHostAddresses(host);
+            IPAddress ipv4Address = addresses.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
 
-                if (reader.HasRows) // если есть данные
+            //но только если в сети
+            SqlCommand changeIP = new SqlCommand($"UPDATE [signUp] SET ip='{ipv4Address}' WHERE login='{login}'", sqlConnection);
+            changeIP.ExecuteNonQuery();
+
+            //=============== сделать подсказку
+            //здесь нужно сделать поток, но позже, когда будет добавлено много пользователей
+            SqlCommand command = new SqlCommand($"SELECT login, password, ip, port FROM signUp", sqlConnection);
+            SqlDataReader reader = command.ExecuteReader();
+            if (reader.HasRows) // если есть данные
+            {
+                while (reader.Read()) // построчно считываем данные
                 {
-                    while (reader.Read()) // построчно считываем данные
+                    if (reader.GetValue(0).ToString() == login)
                     {
-                        if (reader.GetValue(0).ToString() == login)
-                        {
-                            adresIP = reader.GetValue(2).ToString();
-                            port = reader.GetValue(3).ToString();
-                            break;
-                        }
-                            
+                        adresIP = reader.GetValue(2).ToString();
+                        port = reader.GetValue(3).ToString();
+                        break;
                     }
+
                 }
-                reader.Close();
-            });
+            }
+            //================ отkрытие чата с этим человеком
             try
             {
-                Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(adresIP), int.Parse(port));
-                socket.Connect(ipEndPoint);
-                if (socket.Connected)
+                await tcpClient.ConnectAsync(IPAddress.Parse(adresIP), int.Parse(port));
+
+                //Socket socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+                //IPEndPoint ipEndPoint = new IPEndPoint(IPAddress.Parse(adresIP), int.Parse(port));
+                //socket.Connect(ipEndPoint);
+                if (tcpClient.Connected)
                     flag = true;
             }
             catch (Exception)
-            { }
-            //================ отkрытие чата с этим человеком
+            { flag = false;
+                MessageBox.Show("yes");
+            }
 
 
+
+
+            sqlConnection.Close();
         }
+
         public async void onload()
         {
-            verification verification = new verification();
-            TcpListener serverListener = new TcpListener(IPAddress.Parse(verification.ip), int.Parse(verification.port));
+            string ip = verification._ip;
+            string port = verification._port;
+
+            TcpListener serverListener = new TcpListener(IPAddress.Parse(ip), int.Parse(port));//IPAddress.Parse(ip) проблема с ip какой ip может приниматься 
             serverListener.Start();
             var tcpClient = await serverListener.AcceptTcpClientAsync();
-            //============== продолжение логики с подключением 
             if (tcpClient.Connected)
             {
-
+                try
+                {
+                    var stream = tcpClient.GetStream();
+                    var response = new List<byte>();
+                    int bytesRead = 1024;
+                    // считываем данные до конечного символа
+                    while ((bytesRead = stream.ReadByte()) != '\n')
+                    {
+                        // добавляем в буфер
+                        response.Add((byte)bytesRead);
+                    }
+                    var word = Encoding.UTF8.GetString(response.ToArray());// наше слово полученное с клиента
+                    chat chat = new chat();//error
+                    chat.newMessage(word);
+                    response.Clear();
+                }
+                finally
+                {
+                    serverListener.Stop();
+                }
             }
-            //================== сделать закрытие подключения при закрытии приложения
+
         }
     }
 }
