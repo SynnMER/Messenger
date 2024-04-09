@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -15,6 +19,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Xml.Linq;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Messenger
 {
@@ -23,35 +29,80 @@ namespace Messenger
     /// </summary>
     public partial class chat : Window
     {
-        private connection connection = new connection();//Error
         public string _login;
         public bool check = false;
+        public bool secur = false;
+        public string log;
+        private bool enterMessege_Key = false;
         public chat()
         {
             InitializeComponent();
-            connection.onload();
-            //this.DataContext = this;
             listItems.DataContext = new ChatViewModel();
             buttonsCont.DataContext = new createButton();
-            listItems.DataContext = new ChatForServer();
+            //listItems.DataContext = new ChatForServer();
+            //Server();
+            onload();
         }
-        public void newMessage(string text)
+        public async void onload()
         {
-            ((ChatForServer)listItems.DataContext).AddMessage(text);
+            StreamReader Reader = null;
+            try
+            {
+                Reader = new StreamReader(verification.client.GetStream());
+                if (Reader is null) return;
+                // запускаем новый поток для получения данных
+                await Dispatcher.Invoke(() => ReceiveMessageAsync(Reader));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            //Reader?.Close();
+            // получение сообщений
+            async Task ReceiveMessageAsync(StreamReader reader)
+            {
+                // считываем ответ в виде строки
+                while (enterMessege_Key == false)//true
+                {
+                    string message = await reader.ReadLineAsync();
+                    if (namePerson.Text == "")
+                    {
+                        print(message);
+                    }
+                    else
+                    {
+                        printMessage(message);//вывод сообщения
+                    }
+                }
+                
+            }
+            
         }
+        public void print(string message)
+        {
+            if (_login != searchFriends.Text)
+                namePerson.Text = message;
+        }
+        public void printMessage(string text)
+        {
+            ((ChatViewModel)listItems.DataContext).AddMessage(text);
+        }
+
         //нажатие на кнопку  и оптравки нашего сообщения в stackPanel, scrolviewer
         private void sendMessege_Click(object sender, RoutedEventArgs e)
         {
-            if (connection.flag == true)
+            connection connection = new connection();
+            if (verification.flag == true)
             {
                 if (enterMessege.Text != "")
                 {
+                    enterMessege_Key = true;
                     connection.sendMessage(enterMessege.Text);
                     ((ChatViewModel)listItems.DataContext).AddMessage(enterMessege.Text);
                     enterMessege.Text = "";
 
                     bool flag = false;
-                    
+                    secur = true;
                     if (namePerson.Text != "" && ((ChatViewModel)listItems.DataContext).returnCount() > 0)
                     {
                         Button[] buttons = { };
@@ -67,14 +118,18 @@ namespace Messenger
                             ((createButton)buttonsCont.DataContext).AddButton(namePerson.Text);
                     }
                 }
+                chat chat = new chat();
             }
+            secur = false;
         } 
 
 
         private void enterMessege_KeyDown(object sender, KeyEventArgs e)
         {
-            if (connection.flag == true)
+            connection connection = new connection();
+            if (verification.flag == true)
             {
+                enterMessege_Key = true;
                 searchFriends.Text = "";
                 if (e.KeyboardDevice.Modifiers == ModifierKeys.Shift && e.Key == Key.Enter)
                 {
@@ -91,6 +146,7 @@ namespace Messenger
                     enterMessege.Text = "";
 
                     bool flag = false;
+                    secur = true;
                     int countMessages = ((ChatViewModel)listItems.DataContext).returnCount();
                     int countButtons = ((createButton)buttonsCont.DataContext).returnCount();
                     ObservableCollection<Button> buttons = new ObservableCollection<Button>();
@@ -105,23 +161,27 @@ namespace Messenger
                         if (flag == false)
                             ((createButton)buttonsCont.DataContext).AddButton(namePerson.Text);
                     }
+                    secur = false;
+                    chat chat = new chat();
                 }
+                
             }
         }
         private void searchFriends_KeyDown(object sender, KeyEventArgs e)
         {
-            
+            connection connection = new connection();
             if (e.Key == Key.Enter)
             {
                 connection.searchFriends(searchFriends.Text);
-                
-                if (connection.flag == true && _login != searchFriends.Text)
+                print(searchFriends.Text);
+                //namePerson.Text = searchFriends.Text;
+                if (verification.flag == true && _login != searchFriends.Text)
                 {
-                    namePerson.Text = searchFriends.Text;
                     searchFriends.Text = "";
                     check = true;
                 } 
             }
         }
+        
     }
 }

@@ -40,7 +40,7 @@
                     </Style>
                 </TextBox.Resources>
             </TextBox>
-            
+
             <ScrollViewer Width="250" Height="480" Margin="0,100,990,0" VerticalScrollBarVisibility="Auto" >
                 <StackPanel>
                     <ItemsControl x:Name="buttonsCont" ItemsSource="{Binding Buttons}">
@@ -52,11 +52,11 @@
                     </ItemsControl>
                 </StackPanel>
             </ScrollViewer>
-            
-            <TextBlock Height="30" Background="Transparent" Margin="350,0,0,500" Width="150" Padding="4" HorizontalAlignment="Left" >
-                <Run x:Name="namePerson" FontSize="18" FontFamily="Lucida Sans" Foreground="white" FontWeight="Bold" ></Run>
+
+            <TextBlock Background="Transparent" Margin="350,0,0,500" Width="290" Padding="4" HorizontalAlignment="Left" Height="30" >
+                <Run x:Name="namePerson" FontSize="16" FontFamily="Lucida Sans" Foreground="white" FontWeight="Bold" ></Run>
             </TextBlock>
-            
+
             <!--MVVM-->
             <ScrollViewer Height="400" VerticalScrollBarVisibility="Hidden" Margin="350,120,20,150" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel x:Name="stackChat">

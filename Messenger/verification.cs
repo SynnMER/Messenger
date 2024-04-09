@@ -11,15 +11,20 @@ using System.Threading;
 using System.Windows.Media.Animation;
 using System.Net.Sockets;
 using System.Net;
-using Microsoft.SqlServer.Server;
 using System.Windows.Media;
 using System.Windows.Markup;
+using System.IO;
+using static System.Net.Mime.MediaTypeNames;
+using System.Runtime.Remoting.Messaging;
 
 namespace Messenger
 {
     internal class verification
     {
         private Registration registration = null;
+        private connection connection = new connection();
+        public static TcpClient client = new TcpClient();
+        public static bool flag = false;
         public bool check = false;
         public static string _ip = "";
         public static string _port = "";
@@ -98,7 +103,41 @@ namespace Messenger
             //перевод в мессенджер, где сохранены наши чаты
             if (check == true)
             {
+                try
+                {
+                    client.Connect(_ip, int.Parse(_port)); //подключение клиента ip
+                    if (client.Connected)
+                    {
+                        flag = true;
+                    }
+                        
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+                StreamWriter Writer = null;
+                try
+                {
+                    Writer = new StreamWriter(client.GetStream());
+                    if (Writer is null) return;
+                    // запускаем ввод сообщений
+                    await SendMessageAsync(Writer);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+
+                // отправка сообщений
+                async Task SendMessageAsync(StreamWriter writer)
+                {
+                    await writer.WriteLineAsync(login);
+                    await writer.FlushAsync();
+                }
+
                 chat chat = new chat();
+                connection.login = login;
                 chat._login = login;
                 chat.Show();
             }
